@@ -4,7 +4,7 @@
 # Image configuration
 image:
   repository: lamper123hhh/my-app
-  tag: "latest"
+  tag: "22f86dab7bec430e0f7c11b2b93205a799bfb357"
   pullPolicy: IfNotPresent
 
 # Service configuration
