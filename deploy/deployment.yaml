@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: web-app
-          image: lamper123hhh/my-app:latest  # 替换成你的镜像
+          image: lamper123hhh/my-app:feefb22d55b4608655961d67037cf1e19b247b30
           ports:
             - containerPort: 80
           resources:
