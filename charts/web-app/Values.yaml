@@ -12,7 +12,7 @@ service:
   type: NodePort
   port: 80
   targetPort: 80
-  nodePort: 30080
+  # nodePort: 30080  # Commented out to let Kubernetes auto-assign port
 
 # Resource configuration
 resources:
