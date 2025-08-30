@@ -1,0 +1,32 @@
+# Default values for web-app
+# This is a YAML-formatted file.
+
+# Image configuration
+image:
+  repository: lamper123hhh/my-app
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# Service configuration
+service:
+  type: NodePort
+  port: 80
+  targetPort: 80
+  nodePort: 30080
+
+# Resource configuration
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 250m
+    memory: 128Mi
+
+# Replica configuration
+replicaCount: 3
+
+# Pod labels
+podLabels:
+  app: web-app
+  version: "1.0.0"
