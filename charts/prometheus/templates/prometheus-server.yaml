@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prometheus.fullname" . }}-server
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+    component: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "prometheus.selectorLabels" . | nindent 6 }}
+      component: server
+  template:
+    metadata:
+      labels:
+        {{- include "prometheus.selectorLabels" . | nindent 8 }}
+        component: server
+    spec:
+      containers:
+        - name: prometheus
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus/'
+            - '--web.console.libraries=/etc/prometheus/console_libraries'
+            - '--web.console.templates=/etc/prometheus/consoles'
+            - '--storage.tsdb.retention.time=200h'
+            - '--web.enable-lifecycle'
+            - '--web.enable-admin-api'
+          ports:
+            - name: web
+              containerPort: 9090
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus/
+            - name: storage-volume
+              mountPath: /prometheus/
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: web
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: web
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "prometheus.fullname" . }}-config
+        - name: storage-volume
+          {{- if .Values.server.persistentVolume.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "prometheus.fullname" . }}-storage
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "prometheus.fullname" . }}-server
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+    component: server
+spec:
+  type: {{ .Values.server.service.type }}
+  ports:
+    - port: {{ .Values.server.service.port }}
+      targetPort: {{ .Values.server.service.targetPort }}
+      protocol: TCP
+      name: web
+  selector:
+    {{- include "prometheus.selectorLabels" . | nindent 4 }}
+    component: server
+---
+{{- if .Values.server.persistentVolume.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "prometheus.fullname" . }}-storage
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.server.persistentVolume.size }}
+  {{- if .Values.server.persistentVolume.storageClass }}
+  storageClassName: {{ .Values.server.persistentVolume.storageClass }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "prometheus.fullname" . }}-config
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+data:
+  prometheus.yml: |
+    {{- toYaml .Values.config | nindent 4 }}

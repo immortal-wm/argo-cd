@@ -1,0 +1,116 @@
+{{- if .Values.promtail.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "loki.fullname" . }}-promtail
+  labels:
+    {{- include "loki.labels" . | nindent 4 }}
+    component: promtail
+spec:
+  selector:
+    matchLabels:
+      {{- include "loki.selectorLabels" . | nindent 6 }}
+      component: promtail
+  template:
+    metadata:
+      labels:
+        {{- include "loki.selectorLabels" . | nindent 8 }}
+        component: promtail
+    spec:
+      serviceAccountName: {{ include "loki.fullname" . }}-promtail
+      containers:
+        - name: promtail
+          image: "{{ .Values.promtail.image.repository }}:{{ .Values.promtail.image.tag }}"
+          imagePullPolicy: {{ .Values.promtail.image.pullPolicy }}
+          args:
+            - -config.file=/etc/promtail/config.yml
+          ports:
+            - name: http-metrics
+              containerPort: 9080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.promtail.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/promtail/config.yml
+              subPath: config.yml
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: positions
+              mountPath: /tmp/positions.yaml
+              subPath: positions.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "loki.fullname" . }}-promtail-config
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: positions
+          configMap:
+            name: {{ include "loki.fullname" . }}-promtail-positions
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "loki.fullname" . }}-promtail
+  labels:
+    {{- include "loki.labels" . | nindent 4 }}
+    component: promtail
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "loki.fullname" . }}-promtail
+  labels:
+    {{- include "loki.labels" . | nindent 4 }}
+    component: promtail
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "nodes/proxy", "services", "endpoints", "pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "loki.fullname" . }}-promtail
+  labels:
+    {{- include "loki.labels" . | nindent 4 }}
+    component: promtail
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "loki.fullname" . }}-promtail
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "loki.fullname" . }}-promtail
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "loki.fullname" . }}-promtail-config
+  labels:
+    {{- include "loki.labels" . | nindent 4 }}
+    component: promtail
+data:
+  config.yml: |
+    {{- toYaml .Values.promtail.config | nindent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "loki.fullname" . }}-promtail-positions
+  labels:
+    {{- include "loki.labels" . | nindent 4 }}
+    component: promtail
+data:
+  positions.yaml: "{}"
+{{- end }}

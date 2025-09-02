@@ -1,0 +1,16 @@
+apiVersion: v2
+name: loki
+description: Loki log aggregation system
+type: application
+version: 0.1.0
+appVersion: "2.9.0"
+keywords:
+  - logging
+  - loki
+  - logs
+home: https://grafana.com/oss/loki/
+sources:
+  - https://github.com/grafana/loki
+maintainers:
+  - name: monitoring-team
+    email: monitoring@example.com

@@ -1,0 +1,33 @@
+# Default values for prometheus-operator
+# This is a YAML-formatted file.
+
+# Prometheus Operator configuration
+operator:
+  image:
+    repository: quay.io/prometheus-operator/prometheus-operator
+    tag: "v0.68.0"
+    pullPolicy: IfNotPresent
+  
+  # Resource configuration
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: prometheus-operator
+  annotations: {}
+
+# RBAC configuration
+rbac:
+  create: true
+  pspEnabled: false
+
+# CRD configuration
+crd:
+  create: true

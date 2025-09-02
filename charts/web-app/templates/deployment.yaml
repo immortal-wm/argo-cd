@@ -15,6 +15,12 @@ spec:
         {{- include "web-app.selectorLabels" . | nindent 8 }}
         app: web-app
         version: {{ .Values.podLabels.version | quote }}
+      {{- if .Values.monitoring.enabled }}
+      annotations:
+        prometheus.io/scrape: "{{ .Values.monitoring.prometheus.scrape }}"
+        prometheus.io/port: "{{ .Values.monitoring.prometheus.port }}"
+        prometheus.io/path: "{{ .Values.monitoring.prometheus.path }}"
+      {{- end }}
     spec:
       containers:
         - name: web-app

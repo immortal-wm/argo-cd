@@ -31,6 +31,14 @@ podLabels:
   app: web-app
   version: "1.0.0"
 
+# Monitoring annotations
+monitoring:
+  enabled: true
+  prometheus:
+    scrape: true
+    port: 80
+    path: /metrics
+
 # Ingress configuration
 ingress:
   enabled: true
