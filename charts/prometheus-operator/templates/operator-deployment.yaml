@@ -23,7 +23,6 @@ spec:
             - --kubelet-service=kube-system/kubelet
             - --log-level=info
             - --log-format=logfmt
-            - --config-reloader-image=quay.io/prometheus-operator/prometheus-config-reloader:v0.68.0
             - --prometheus-config-reloader=quay.io/prometheus-operator/prometheus-config-reloader:v0.68.0
           ports:
             - name: http
