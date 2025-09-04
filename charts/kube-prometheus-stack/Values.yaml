@@ -1,0 +1,198 @@
+# Default values for kube-prometheus-stack
+# This is a YAML-formatted file.
+
+# Global configuration
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# Prometheus Operator configuration
+prometheusOperator:
+  enabled: true
+  image:
+    repository: quay.io/prometheus-operator/prometheus-operator
+    tag: v0.68.0
+    pullPolicy: IfNotPresent
+  
+  # Resource configuration
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+# Prometheus configuration
+prometheus:
+  enabled: true
+  prometheusSpec:
+    # Storage configuration
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ""
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    
+    # Resource configuration
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    
+    # Retention configuration
+    retention: 15d
+    
+    # Service monitor selector (monitor all ServiceMonitors)
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    
+    # Rule selector (monitor all PrometheusRules)
+    ruleSelector: {}
+    ruleNamespaceSelector: {}
+    
+    # Additional scrape configs
+    additionalScrapeConfigs: []
+
+# Alertmanager configuration
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    # Storage configuration
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ""
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
+    
+    # Resource configuration
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+# Grafana configuration
+grafana:
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: "10.0.0"
+    pullPolicy: IfNotPresent
+  
+  # Admin credentials
+  adminPassword: admin
+  
+  # Resource configuration
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # Persistence
+  persistence:
+    enabled: true
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  
+  # Ingress configuration
+  ingress:
+    enabled: false
+    annotations: {}
+    hosts: []
+    tls: []
+
+# Node Exporter configuration
+nodeExporter:
+  enabled: true
+  image:
+    repository: prom/node-exporter
+    tag: v1.6.1
+    pullPolicy: IfNotPresent
+
+# Kube State Metrics configuration
+kubeStateMetrics:
+  enabled: true
+  image:
+    repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+    tag: v2.9.2
+    pullPolicy: IfNotPresent
+
+# Prometheus Adapter configuration (for HPA)
+prometheusAdapter:
+  enabled: true
+  image:
+    repository: registry.k8s.io/prometheus-adapter/prometheus-adapter
+    tag: v0.11.0
+    pullPolicy: IfNotPresent
+
+# Default rules configuration
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: true
+    general: true
+    k8s: true
+    kubeApiserver: true
+    kubeApiserverAvailability: true
+    kubeApiserverError: true
+    kubeApiserverSlos: true
+    kubelet: true
+    kubeProxy: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeScheduler: true
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+
+# Service monitors configuration
+serviceMonitorSelectorNilUsesHelmValues: false
+serviceMonitorSelector: {}
+serviceMonitorNamespaceSelector: {}
+
+# Pod monitors configuration
+podMonitorSelectorNilUsesHelmValues: false
+podMonitorSelector: {}
+podMonitorNamespaceSelector: {}
+
+# Probe monitors configuration
+probeSelectorNilUsesHelmValues: false
+probeSelector: {}
+probeNamespaceSelector: {}
+
+# Prometheus rules configuration
+ruleSelectorNilUsesHelmValues: false
+ruleSelector: {}
+ruleNamespaceSelector: {}
